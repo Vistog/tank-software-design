@@ -7,6 +7,6 @@ public class GameDesktopLauncher {
     public static void main(String[] args) {
         Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
         config.setWindowedMode(1280, 1024);
-        new Lwjgl3Application(new TankGame(), config);
+        new Lwjgl3Application(new TankGame("level.tmx", 0.4f), config);
     }
 }
