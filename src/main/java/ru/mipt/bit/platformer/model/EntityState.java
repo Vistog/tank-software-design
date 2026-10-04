@@ -7,7 +7,7 @@ public final class EntityState {
     public final Direction facing;
     public final float progress;
 
-    EntityState(Cell cell, Cell destination, Direction facing, float progress) {
+    public EntityState(Cell cell, Cell destination, Direction facing, float progress) {
         this.cell = cell;
         this.destination = destination;
         this.facing = facing;

@@ -8,15 +8,16 @@ import static org.junit.Assert.*;
 public class InputControllerTest {
     private InputController input;
     private GameWorld world;
+    private Tank tank;
 
     @Before
     public void createInput() {
-        Tank tank = new Tank(1);
+        tank = new Tank(1);
         world = new GameWorld(new RectangleField(5, 5), 0.4f);
         world.add(tank, new Cell(1, 1), Direction.RIGHT);
-        input = new InputController(tank);
-        input.bindMovement(10, Direction.UP);
-        input.bindMovement(20, Direction.LEFT);
+        input = new InputController();
+        input.bindHeld(10, () -> tank.move(Direction.UP));
+        input.bindHeld(20, () -> tank.move(Direction.LEFT));
     }
 
     @Test
@@ -66,7 +67,7 @@ public class InputControllerTest {
 
     @Test
     public void bindingCanBeReassigned() {
-        input.bindMovement(10, Direction.RIGHT);
+        input.bindHeld(10, () -> tank.move(Direction.RIGHT));
         input.update(key -> key == 10, key -> false);
         world.update(0.4f);
         assertEquals(new Cell(2, 1), world.getState(1).cell);

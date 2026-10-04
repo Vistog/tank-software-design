@@ -6,41 +6,35 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
-import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Disposable;
 import ru.mipt.bit.platformer.model.EntityState;
-import ru.mipt.bit.platformer.model.Field;
-import ru.mipt.bit.platformer.model.GameWorld;
-import ru.mipt.bit.platformer.model.RectangleField;
 import ru.mipt.bit.platformer.util.TileMovement;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.function.IntFunction;
 
 import static com.badlogic.gdx.graphics.GL20.GL_COLOR_BUFFER_BIT;
 import static ru.mipt.bit.platformer.util.GdxGameUtils.*;
 
 public final class RenderSystem implements Disposable {
     private final SpriteBatch batch = new SpriteBatch();
-    private final TiledMap level = new TmxMapLoader().load("level.tmx");
-    private final TiledMapTileLayer ground = getSingleLayer(level);
-    private final OrthogonalTiledMapRenderer levelRenderer =
-            new OrthogonalTiledMapRenderer(level, batch);
-    private final TileMovement tileMovement = new TileMovement(ground, Interpolation.smooth);
+    private final OrthogonalTiledMapRenderer levelRenderer;
+    private final TileMovement tileMovement;
     private final Map<Integer, TextureRegion> renderables = new LinkedHashMap<>();
 
-    public RenderSystem() {
+    // The caller owns the map; this renderer owns its batch and registered textures.
+    public RenderSystem(TiledMap level, Interpolation interpolation) {
+        TiledMapTileLayer ground = getSingleLayer(level);
+        levelRenderer = new OrthogonalTiledMapRenderer(level, batch);
+        tileMovement = new TileMovement(ground, interpolation);
         levelRenderer.getViewBounds().set(0, 0,
                 ground.getWidth() * ground.getTileWidth(),
                 ground.getHeight() * ground.getTileHeight());
-    }
-
-    public Field createField() {
-        return new RectangleField(ground.getWidth(), ground.getHeight());
     }
 
     public void register(int entityId, String texturePath) {
@@ -49,13 +43,13 @@ public final class RenderSystem implements Disposable {
         if (previous != null) previous.getTexture().dispose();
     }
 
-    public void render(GameWorld world) {
+    public void render(IntFunction<EntityState> states) {
         Gdx.gl.glClearColor(0f, 0f, 0.2f, 1f);
         Gdx.gl.glClear(GL_COLOR_BUFFER_BIT);
         levelRenderer.render();
         batch.begin();
         for (Map.Entry<Integer, TextureRegion> entry : renderables.entrySet()) {
-            EntityState state = world.getState(entry.getKey());
+            EntityState state = states.apply(entry.getKey());
             TextureRegion graphics = entry.getValue();
             Rectangle rectangle = createBoundingRectangle(graphics);
             tileMovement.moveRectangleBetweenTileCenters(rectangle,
@@ -71,7 +65,6 @@ public final class RenderSystem implements Disposable {
         for (TextureRegion graphics : renderables.values()) graphics.getTexture().dispose();
         renderables.clear();
         levelRenderer.dispose();
-        level.dispose();
         batch.dispose();
     }
 }
