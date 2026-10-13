@@ -10,6 +10,7 @@ import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.Disposable;
 import ru.mipt.bit.platformer.model.EntityState;
 import ru.mipt.bit.platformer.util.TileMovement;
@@ -32,9 +33,11 @@ public final class RenderSystem implements Disposable {
         TiledMapTileLayer ground = getSingleLayer(level);
         levelRenderer = new OrthogonalTiledMapRenderer(level, batch);
         tileMovement = new TileMovement(ground, interpolation);
-        levelRenderer.getViewBounds().set(0, 0,
-                ground.getWidth() * ground.getTileWidth(),
-                ground.getHeight() * ground.getTileHeight());
+        float width = ground.getWidth() * ground.getTileWidth();
+        float height = ground.getHeight() * ground.getTileHeight();
+        Matrix4 projection = new Matrix4().setToOrtho2D(0, 0, width, height);
+        batch.setProjectionMatrix(projection);
+        levelRenderer.setView(projection, 0, 0, width, height);
     }
 
     public void register(int entityId, String texturePath) {
