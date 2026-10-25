@@ -2,6 +2,8 @@ package ru.mipt.bit.platformer.graphics;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.tiled.TiledMap;
@@ -26,7 +28,7 @@ public final class RenderSystem implements Disposable {
     private final SpriteBatch batch = new SpriteBatch();
     private final OrthogonalTiledMapRenderer levelRenderer;
     private final TileMovement tileMovement;
-    private final Map<Integer, TextureRegion> renderables = new LinkedHashMap<>();
+    private final Map<Integer, Sprite> renderables = new LinkedHashMap<>();
 
     // The caller owns the map; this renderer owns its batch and registered textures.
     public RenderSystem(TiledMap level, Interpolation interpolation) {
@@ -41,7 +43,12 @@ public final class RenderSystem implements Disposable {
     }
 
     public void register(int entityId, String texturePath) {
-        TextureRegion graphics = new TextureRegion(new Texture(texturePath));
+        register(entityId, texturePath, Color.WHITE);
+    }
+
+    public void register(int entityId, String texturePath, Color color) {
+        Sprite graphics = new Sprite(new Texture(texturePath));
+        graphics.setColor(color);
         TextureRegion previous = renderables.put(entityId, graphics);
         if (previous != null) previous.getTexture().dispose();
     }
@@ -51,9 +58,10 @@ public final class RenderSystem implements Disposable {
         Gdx.gl.glClear(GL_COLOR_BUFFER_BIT);
         levelRenderer.render();
         batch.begin();
-        for (Map.Entry<Integer, TextureRegion> entry : renderables.entrySet()) {
+        for (Map.Entry<Integer, Sprite> entry : renderables.entrySet()) {
             EntityState state = states.apply(entry.getKey());
-            TextureRegion graphics = entry.getValue();
+            Sprite graphics = entry.getValue();
+            batch.setColor(graphics.getColor());
             Rectangle rectangle = createBoundingRectangle(graphics);
             tileMovement.moveRectangleBetweenTileCenters(rectangle,
                     new GridPoint2(state.cell.x, state.cell.y),
@@ -61,6 +69,7 @@ public final class RenderSystem implements Disposable {
             drawTextureRegionUnscaled(batch, graphics, rectangle, state.facing.rotationDegrees);
         }
         batch.end();
+        batch.setColor(Color.WHITE);
     }
 
     @Override
