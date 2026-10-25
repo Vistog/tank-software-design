@@ -21,6 +21,7 @@ repositories {
 }
 
 dependencies {
+    testImplementation 'junit:junit:4.13.2'
     implementation deps.gdx.gdx
     implementation deps.gdx.backend_lwjgl3
     implementation deps.gdx.platform_desktop
