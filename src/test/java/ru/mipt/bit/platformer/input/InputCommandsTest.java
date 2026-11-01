@@ -9,7 +9,7 @@ import static org.junit.Assert.*;
 public class InputCommandsTest {
     @Test
     public void commandsDoNotNeedTankOrWorld() {
-        InputController input = new InputController();
+        InputController input = new InputController(Runnable::run);
         List<String> calls = new ArrayList<>();
         input.bindHeld(1, () -> calls.add("camera"));
         input.bindHeld(2, () -> calls.add("zoom"));
@@ -24,7 +24,7 @@ public class InputCommandsTest {
 
     @Test
     public void actionCanBeReplacedWithoutChangingController() {
-        InputController input = new InputController();
+        InputController input = new InputController(Runnable::run);
         List<String> calls = new ArrayList<>();
         input.bindAction(1, () -> calls.add("old"));
         input.bindAction(1, () -> calls.add("new"));
@@ -34,7 +34,7 @@ public class InputCommandsTest {
 
     @Test
     public void unboundKeysDoNothing() {
-        InputController input = new InputController();
+        InputController input = new InputController(Runnable::run);
         input.bindHeld(1, () -> fail("Wrong held key"));
         input.bindAction(2, () -> fail("Wrong action key"));
         input.update(key -> key == 99, key -> key == 99);
@@ -42,7 +42,7 @@ public class InputCommandsTest {
 
     @Test
     public void emptyControllerDoesNotQueryKeyboard() {
-        InputController input = new InputController();
+        InputController input = new InputController(Runnable::run);
         input.update(key -> { fail("No bindings"); return false; },
                 key -> { fail("No bindings"); return false; });
     }

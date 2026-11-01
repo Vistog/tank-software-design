@@ -2,10 +2,10 @@ package ru.mipt.bit.platformer.graphics;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
@@ -14,7 +14,7 @@ import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.Disposable;
-import ru.mipt.bit.platformer.model.EntityState;
+import ru.mipt.bit.platformer.model.*;
 import ru.mipt.bit.platformer.util.TileMovement;
 
 import java.util.LinkedHashMap;
@@ -24,13 +24,38 @@ import java.util.function.IntFunction;
 import static com.badlogic.gdx.graphics.GL20.GL_COLOR_BUFFER_BIT;
 import static ru.mipt.bit.platformer.util.GdxGameUtils.*;
 
-public final class RenderSystem implements Disposable {
+public final class RenderSystem implements Disposable, WorldListener {
     private final SpriteBatch batch = new SpriteBatch();
     private final OrthogonalTiledMapRenderer levelRenderer;
     private final TileMovement tileMovement;
     private final Map<Integer, Sprite> renderables = new LinkedHashMap<>();
+    private final Map<String, Texture> textures = new LinkedHashMap<>();
+    private Texture bulletTexture;
 
-    // The caller owns the map; this renderer owns its batch and registered textures.
+    @Override
+    public void entityAdded(Entity entity) {
+        if (entity instanceof Tank) {
+            register(entity.id, "images/tank_blue.png", entity.id == 1 ? Color.WHITE : Color.CYAN);
+        } else if (entity instanceof Tree) {
+            register(entity.id, "images/greenTree.png");
+        } else if (entity instanceof Bullet) {
+            if (bulletTexture == null) {
+                Pixmap pixels = new Pixmap(16, 16, Pixmap.Format.RGBA8888);
+                pixels.setColor(Color.YELLOW);
+                pixels.fillCircle(8, 8, 7);
+                bulletTexture = new Texture(pixels);
+                pixels.dispose();
+            }
+            renderables.put(entity.id, new Sprite(bulletTexture));
+        }
+    }
+
+    @Override
+    public void entityRemoved(Entity entity) {
+        renderables.remove(entity.id);
+    }
+
+    // Textures are shared by sprites and released only when the renderer is disposed.
     public RenderSystem(TiledMap level, Interpolation interpolation) {
         TiledMapTileLayer ground = getSingleLayer(level);
         levelRenderer = new OrthogonalTiledMapRenderer(level, batch);
@@ -47,10 +72,10 @@ public final class RenderSystem implements Disposable {
     }
 
     public void register(int entityId, String texturePath, Color color) {
-        Sprite graphics = new Sprite(new Texture(texturePath));
+        Texture texture = textures.computeIfAbsent(texturePath, Texture::new);
+        Sprite graphics = new Sprite(texture);
         graphics.setColor(color);
-        TextureRegion previous = renderables.put(entityId, graphics);
-        if (previous != null) previous.getTexture().dispose();
+        renderables.put(entityId, graphics);
     }
 
     public void render(IntFunction<EntityState> states) {
@@ -74,7 +99,9 @@ public final class RenderSystem implements Disposable {
 
     @Override
     public void dispose() {
-        for (TextureRegion graphics : renderables.values()) graphics.getTexture().dispose();
+        for (Texture texture : textures.values()) texture.dispose();
+        textures.clear();
+        if (bulletTexture != null) bulletTexture.dispose();
         renderables.clear();
         levelRenderer.dispose();
         batch.dispose();

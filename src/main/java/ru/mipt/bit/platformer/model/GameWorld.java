@@ -3,11 +3,65 @@ package ru.mipt.bit.platformer.model;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.List;
+import java.util.ArrayList;
 
 public final class GameWorld {
     private final Field field;
     private final float movementDuration;
     private final Map<Integer, Placement> placements = new LinkedHashMap<>();
+    private final List<WorldListener> listeners = new ArrayList<>();
+    private int nextId = 1;
+
+    public void addListener(WorldListener listener) {
+        if (!listeners.contains(listener)) listeners.add(Objects.requireNonNull(listener));
+    }
+
+    public void removeListener(WorldListener listener) {
+        listeners.remove(listener);
+    }
+
+    public int newId() {
+        return nextId++;
+    }
+
+    public boolean contains(int entityId) {
+        return placements.containsKey(entityId);
+    }
+
+    public boolean contains(Cell cell) {
+        return field.contains(cell);
+    }
+
+    public List<Entity> entities() {
+        List<Entity> result = new ArrayList<>();
+        for (Placement placement : placements.values()) result.add(placement.entity);
+        return result;
+    }
+
+    public List<Entity> entitiesAt(Cell cell) {
+        List<Entity> result = new ArrayList<>();
+        for (Placement placement : placements.values()) {
+            if (placement.cell.equals(cell) || placement.destination.equals(cell)) {
+                result.add(placement.entity);
+            }
+        }
+        return result;
+    }
+
+    public void remove(int entityId) {
+        Placement removed = placements.remove(entityId);
+        if (removed == null) return;
+        for (WorldListener listener : new ArrayList<>(listeners)) {
+            listener.entityRemoved(removed.entity);
+        }
+    }
+
+    void moveBullet(Bullet bullet, Cell cell) {
+        Placement placement = placements.get(bullet.id);
+        placement.cell = cell;
+        placement.destination = cell;
+    }
 
     public GameWorld(Field field, float movementDuration) {
         this.field = Objects.requireNonNull(field);
@@ -28,6 +82,8 @@ public final class GameWorld {
             throw new IllegalArgumentException("Cell is occupied");
         }
         placements.put(entity.id, new Placement(entity, cell, facing));
+        nextId = Math.max(nextId, entity.id + 1);
+        for (WorldListener listener : new ArrayList<>(listeners)) listener.entityAdded(entity);
     }
 
     public EntityState getState(int entityId) {

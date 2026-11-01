@@ -15,7 +15,7 @@ public class InputControllerTest {
         tank = new Tank(1);
         world = new GameWorld(new RectangleField(5, 5), 0.4f);
         world.add(tank, new Cell(1, 1), Direction.RIGHT);
-        input = new InputController();
+        input = new InputController(Runnable::run);
         input.bindHeld(10, () -> tank.move(Direction.UP));
         input.bindHeld(20, () -> tank.move(Direction.LEFT));
     }

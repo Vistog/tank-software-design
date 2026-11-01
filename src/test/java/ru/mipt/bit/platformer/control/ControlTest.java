@@ -33,7 +33,7 @@ public class ControlTest {
     }
 
     @Test public void keyboardStrategyUsesBindingsAndActions() {
-        InputController input = new InputController();
+        InputController input = new InputController(Runnable::run);
         input.bindHeld(10, new MoveCommand(player, Direction.UP));
         input.bindHeld(20, new MoveCommand(player, Direction.LEFT));
         int[] shots = {0};
@@ -47,7 +47,7 @@ public class ControlTest {
     }
 
     @Test public void releasedKeyboardDoesNotMovePlayer() {
-        InputController input = new InputController();
+        InputController input = new InputController(Runnable::run);
         input.bindHeld(10, new MoveCommand(player, Direction.UP));
         new KeyboardControl(input, key -> false, key -> false).update();
         world.update(0.4f);
@@ -56,8 +56,8 @@ public class ControlTest {
 
     @Test public void aiUsesRandomDirectionButDoesNotMovePlayer() {
         int seed = 42;
-        Direction expected = Direction.values()[new Random(seed).nextInt(4)];
-        ControlStrategy ai = new RandomControl(bot, world::getState, new Random(seed));
+        Direction expected = Direction.values()[new Random(seed).nextInt(5)];
+        ControlStrategy ai = new RandomControl(bot, world::getState, new Random(seed), Runnable::run);
         ai.update();
         assertEquals(new Cell(4, 4), world.getState(2).cell);
         world.update(0.4f);
@@ -73,7 +73,7 @@ public class ControlTest {
                 throw new AssertionError("AI must wait until arrival");
             }
         };
-        new RandomControl(bot, world::getState, unexpected).update();
+        new RandomControl(bot, world::getState, unexpected, Runnable::run).update();
         world.update(0.1f);
         assertEquals(Direction.LEFT, world.getState(2).facing);
         assertEquals(new Cell(3, 4), world.getState(2).destination);
@@ -88,7 +88,7 @@ public class ControlTest {
                 return calls++ == 0 ? Direction.LEFT.ordinal() : Direction.UP.ordinal();
             }
         };
-        ControlStrategy ai = new RandomControl(trapped, world::getState, directions);
+        ControlStrategy ai = new RandomControl(trapped, world::getState, directions, Runnable::run);
         ai.update();
         world.update(0.4f);
         assertEquals(new Cell(0, 0), world.getState(3).cell);
@@ -135,8 +135,8 @@ public class ControlTest {
         Tank otherBot = new Tank(4);
         world.add(otherBot, new Cell(2, 4), Direction.LEFT);
         List<ControlStrategy> controls = Arrays.asList(
-                new RandomControl(bot, world::getState, new Random(12)),
-                new RandomControl(otherBot, world::getState, new Random(31)));
+                new RandomControl(bot, world::getState, new Random(12), Runnable::run),
+                new RandomControl(otherBot, world::getState, new Random(31), Runnable::run));
         boolean moved = false;
         RectangleField field = new RectangleField(6, 6);
         for (int tick = 0; tick < 1000; tick++) {
@@ -154,8 +154,15 @@ public class ControlTest {
             assertEquals(new Cell(1, 1), world.getState(1).cell);
         }
         assertTrue(moved);
-        new MoveCommand(player, Direction.LEFT).run();
-        world.update(0.4f);
-        assertEquals(new Cell(0, 1), world.getState(1).cell);
+        for (Direction direction : Direction.values()) {
+            Cell target = direction.nextCell(world.getState(1).cell);
+            if (world.isFreeForMovement(target)) {
+                new MoveCommand(player, direction).run();
+                world.update(0.4f);
+                assertEquals(target, world.getState(1).cell);
+                return;
+            }
+        }
+        fail("Expected a free neighbour for the player");
     }
 }
