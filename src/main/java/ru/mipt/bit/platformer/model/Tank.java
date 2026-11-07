@@ -6,6 +6,7 @@ public final class Tank extends Entity {
     private Direction requestedDirection;
     private boolean shotRequested;
     private int health;
+    private final int maxHealth;
 
     public Tank(int id) {
         this(id, 100);
@@ -15,6 +16,7 @@ public final class Tank extends Entity {
         super(id, true);
         if (health <= 0) throw new IllegalArgumentException("Health must be positive");
         this.health = health;
+        this.maxHealth = health;
     }
 
     // This is an intention. Only the world can change the actual position.
@@ -29,6 +31,10 @@ public final class Tank extends Entity {
 
     public int health() {
         return health;
+    }
+
+    public float healthFraction() {
+        return (float) health / maxHealth;
     }
 
     public boolean isAlive() {

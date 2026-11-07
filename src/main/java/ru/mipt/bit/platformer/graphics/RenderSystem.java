@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
@@ -28,14 +29,30 @@ public final class RenderSystem implements Disposable, WorldListener {
     private final SpriteBatch batch = new SpriteBatch();
     private final OrthogonalTiledMapRenderer levelRenderer;
     private final TileMovement tileMovement;
-    private final Map<Integer, Sprite> renderables = new LinkedHashMap<>();
+    private final Map<Integer, EntityRenderer> renderables = new LinkedHashMap<>();
     private final Map<String, Texture> textures = new LinkedHashMap<>();
     private Texture bulletTexture;
+    private Texture barTexture;
+    private boolean showHealth;
+
+    public void toggleHealthBars() {
+        showHealth = !showHealth;
+    }
 
     @Override
     public void entityAdded(Entity entity) {
         if (entity instanceof Tank) {
             register(entity.id, "images/tank_blue.png", entity.id == 1 ? Color.WHITE : Color.CYAN);
+            if (barTexture == null) {
+                Pixmap pixel = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+                pixel.setColor(Color.WHITE);
+                pixel.fill();
+                barTexture = new Texture(pixel);
+                pixel.dispose();
+            }
+            Tank tank = (Tank) entity;
+            renderables.put(entity.id, new HealthBarRenderer(renderables.get(entity.id),
+                    new TextureRegion(barTexture), tank, () -> showHealth));
         } else if (entity instanceof Tree) {
             register(entity.id, "images/greenTree.png");
         } else if (entity instanceof Bullet) {
@@ -46,7 +63,7 @@ public final class RenderSystem implements Disposable, WorldListener {
                 bulletTexture = new Texture(pixels);
                 pixels.dispose();
             }
-            renderables.put(entity.id, new Sprite(bulletTexture));
+            renderables.put(entity.id, new SpriteRenderer(new Sprite(bulletTexture)));
         }
     }
 
@@ -75,7 +92,7 @@ public final class RenderSystem implements Disposable, WorldListener {
         Texture texture = textures.computeIfAbsent(texturePath, Texture::new);
         Sprite graphics = new Sprite(texture);
         graphics.setColor(color);
-        renderables.put(entityId, graphics);
+        renderables.put(entityId, new SpriteRenderer(graphics));
     }
 
     public void render(IntFunction<EntityState> states) {
@@ -83,15 +100,14 @@ public final class RenderSystem implements Disposable, WorldListener {
         Gdx.gl.glClear(GL_COLOR_BUFFER_BIT);
         levelRenderer.render();
         batch.begin();
-        for (Map.Entry<Integer, Sprite> entry : renderables.entrySet()) {
+        for (Map.Entry<Integer, EntityRenderer> entry : renderables.entrySet()) {
             EntityState state = states.apply(entry.getKey());
-            Sprite graphics = entry.getValue();
-            batch.setColor(graphics.getColor());
-            Rectangle rectangle = createBoundingRectangle(graphics);
+            EntityRenderer graphics = entry.getValue();
+            Rectangle rectangle = graphics.bounds();
             tileMovement.moveRectangleBetweenTileCenters(rectangle,
                     new GridPoint2(state.cell.x, state.cell.y),
                     new GridPoint2(state.destination.x, state.destination.y), state.progress);
-            drawTextureRegionUnscaled(batch, graphics, rectangle, state.facing.rotationDegrees);
+            graphics.render(batch, rectangle, state.facing.rotationDegrees);
         }
         batch.end();
         batch.setColor(Color.WHITE);
@@ -102,6 +118,7 @@ public final class RenderSystem implements Disposable, WorldListener {
         for (Texture texture : textures.values()) texture.dispose();
         textures.clear();
         if (bulletTexture != null) bulletTexture.dispose();
+        if (barTexture != null) barTexture.dispose();
         renderables.clear();
         levelRenderer.dispose();
         batch.dispose();

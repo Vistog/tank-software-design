@@ -27,6 +27,7 @@ public final class TankGame extends ApplicationAdapter {
     private final Random random;
     private final Map<Integer, ControlStrategy> controls = new LinkedHashMap<>();
     private final CommandQueue commands = new CommandQueue();
+    private final InputController viewInput = new InputController(commands::add);
     private BulletSystem bullets;
     private TiledMap level;
     private GameWorld world;
@@ -63,6 +64,7 @@ public final class TankGame extends ApplicationAdapter {
         world = new GameWorld(new RectangleField(data.width, data.height),
                 movementDuration);
         renderer = new RenderSystem(level, Interpolation.smooth);
+        viewInput.bindAction(L, renderer::toggleHealthBars);
         world.addListener(renderer);
         world.addListener(new WorldListener() {
             @Override public void entityAdded(Entity entity) {}
@@ -100,6 +102,7 @@ public final class TankGame extends ApplicationAdapter {
 
     @Override
     public void render() {
+        viewInput.update(Gdx.input::isKeyPressed, Gdx.input::isKeyJustPressed);
         for (ControlStrategy control : controls.values()) control.update();
         commands.execute();
         bullets.update(Gdx.graphics.getDeltaTime());
