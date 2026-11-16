@@ -2,6 +2,7 @@ package ru.mipt.bit.platformer.control;
 
 import ru.mipt.bit.platformer.model.Tank;
 
+/** Application: shooting use case implementing the Runnable input port. */
 public final class ShootCommand implements Runnable {
     private final Tank tank;
 

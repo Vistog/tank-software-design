@@ -19,6 +19,7 @@ import ru.mipt.bit.platformer.model.*;
 
 import static com.badlogic.gdx.Input.Keys.*;
 
+/** Infrastructure: LibGDX adapter; also wires and drives the application loop. */
 public final class TankGame extends ApplicationAdapter {
     private final String levelPath;
     private final LevelSource levelSource;

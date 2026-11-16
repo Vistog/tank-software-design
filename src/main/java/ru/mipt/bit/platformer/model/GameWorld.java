@@ -6,6 +6,7 @@ import java.util.Objects;
 import java.util.List;
 import java.util.ArrayList;
 
+/** Domain: owns positions, movement and occupied cells. */
 public final class GameWorld {
     private final Field field;
     private final float movementDuration;
@@ -119,7 +120,7 @@ public final class GameWorld {
         }
         // Keep source cells occupied until all requests have been handled.
         for (Placement placement : placements.values()) {
-            placement.advance(deltaTime / movementDuration);
+            placement.advance(deltaTime / movementDuration * placement.entity.speedMultiplier());
         }
     }
 

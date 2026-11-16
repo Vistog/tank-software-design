@@ -7,6 +7,7 @@ import com.badlogic.gdx.math.Rectangle;
 import java.util.function.BooleanSupplier;
 import ru.mipt.bit.platformer.model.Tank;
 
+/** Infrastructure: graphics decorator adding a health bar. */
 public final class HealthBarRenderer implements EntityRenderer {
     private final EntityRenderer wrapped;
     private final TextureRegion pixel;

@@ -1,5 +1,6 @@
 package ru.mipt.bit.platformer.model;
 
+/** Domain: rectangular boundary implementation of Field. */
 public final class RectangleField implements Field {
     private final int width;
     private final int height;

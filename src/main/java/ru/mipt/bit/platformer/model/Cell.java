@@ -2,6 +2,7 @@ package ru.mipt.bit.platformer.model;
 
 import java.util.Objects;
 
+/** Domain: grid position value. */
 public final class Cell {
     public final int x;
     public final int y;

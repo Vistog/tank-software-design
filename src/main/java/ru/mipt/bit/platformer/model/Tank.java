@@ -2,11 +2,13 @@ package ru.mipt.bit.platformer.model;
 
 import java.util.Objects;
 
+/** Domain: tank intentions, health and current behavior state. */
 public final class Tank extends Entity {
     private Direction requestedDirection;
     private boolean shotRequested;
     private int health;
     private final int maxHealth;
+    private TankState state = HealthState.LIGHT;
 
     public Tank(int id) {
         this(id, 100);
@@ -26,7 +28,12 @@ public final class Tank extends Entity {
     }
 
     public void shoot() {
-        if (isAlive()) shotRequested = true;
+        if (isAlive() && state.canShoot()) shotRequested = true;
+    }
+
+    @Override
+    public float speedMultiplier() {
+        return state.speedMultiplier();
     }
 
     public int health() {
@@ -44,6 +51,7 @@ public final class Tank extends Entity {
     public void takeDamage(int damage) {
         if (damage < 0) throw new IllegalArgumentException("Negative damage");
         health = Math.max(0, health - damage);
+        state = HealthState.forHealth(health, maxHealth);
         if (!isAlive()) {
             requestedDirection = null;
             shotRequested = false;
@@ -53,7 +61,7 @@ public final class Tank extends Entity {
     boolean takeShotRequest() {
         boolean requested = shotRequested;
         shotRequested = false;
-        return requested;
+        return requested && isAlive() && state.canShoot();
     }
 
     @Override

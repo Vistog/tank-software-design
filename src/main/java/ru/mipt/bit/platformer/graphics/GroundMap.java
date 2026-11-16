@@ -4,6 +4,7 @@ import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import static ru.mipt.bit.platformer.util.GdxGameUtils.getSingleLayer;
 
+/** Infrastructure: adapter for the LibGDX tiled map. */
 public final class GroundMap {
     private GroundMap() {}
 

@@ -1,6 +1,7 @@
 package ru.mipt.bit.platformer.model;
 
 // An immutable snapshot. Reading it cannot change the world.
+/** Domain: read-only spatial snapshot for consumers such as rendering. */
 public final class EntityState {
     public final Cell cell;
     public final Cell destination;

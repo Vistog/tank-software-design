@@ -3,6 +3,7 @@ package ru.mipt.bit.platformer.control;
 import java.util.ArrayList;
 import java.util.List;
 
+/** Application: receives and executes commands through the Runnable input port. */
 public final class CommandQueue {
     private final List<Runnable> pending = new ArrayList<>();
 

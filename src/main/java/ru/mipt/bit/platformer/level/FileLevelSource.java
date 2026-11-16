@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+/** Infrastructure: file adapter for the LevelSource output port. */
 public final class FileLevelSource implements LevelSource {
     private final Path path;
 

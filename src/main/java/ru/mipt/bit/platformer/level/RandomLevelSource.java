@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 
+/** Infrastructure: procedural adapter for the LevelSource output port. */
 public final class RandomLevelSource implements LevelSource {
     private final int width;
     private final int height;

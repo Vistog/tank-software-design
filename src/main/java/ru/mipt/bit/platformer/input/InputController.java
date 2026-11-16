@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.function.IntPredicate;
 import java.util.function.Consumer;
 
+/** Infrastructure: input adapter translating key states into Runnable commands. */
 public final class InputController {
     private final Consumer<Runnable> submit;
     private final Map<Integer, Runnable> heldActions = new LinkedHashMap<>();

@@ -25,6 +25,7 @@ import java.util.function.IntFunction;
 import static com.badlogic.gdx.graphics.GL20.GL_COLOR_BUFFER_BIT;
 import static ru.mipt.bit.platformer.util.GdxGameUtils.*;
 
+/** Infrastructure: output adapter implementing WorldListener and drawing the world. */
 public final class RenderSystem implements Disposable, WorldListener {
     private final SpriteBatch batch = new SpriteBatch();
     private final OrthogonalTiledMapRenderer levelRenderer;

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/** Domain: shooting, projectile movement and collision rules. */
 public final class BulletSystem {
     private final GameWorld world;
     private final float stepDuration;

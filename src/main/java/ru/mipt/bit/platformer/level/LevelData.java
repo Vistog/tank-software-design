@@ -5,6 +5,7 @@ import ru.mipt.bit.platformer.model.RectangleField;
 import java.util.HashSet;
 import java.util.List;
 
+/** Application: level data returned through LevelSource, without graphics or file handles. */
 public final class LevelData {
     public final int width;
     public final int height;

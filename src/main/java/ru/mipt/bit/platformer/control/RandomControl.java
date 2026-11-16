@@ -5,6 +5,7 @@ import java.util.Random;
 import java.util.function.IntFunction;
 import java.util.function.Consumer;
 
+/** Application: AI strategy producing commands. */
 public final class RandomControl implements ControlStrategy {
     private final Tank tank;
     private final IntFunction<EntityState> states;

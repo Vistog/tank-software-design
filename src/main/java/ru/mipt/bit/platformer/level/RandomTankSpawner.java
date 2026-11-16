@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
+/** Application: selects free spawn positions using the domain world. */
 public final class RandomTankSpawner {
     private final Random random;
 

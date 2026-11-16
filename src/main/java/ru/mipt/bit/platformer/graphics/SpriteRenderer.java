@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Rectangle;
 import static ru.mipt.bit.platformer.util.GdxGameUtils.*;
 
+/** Infrastructure: sprite implementation of the graphics contract. */
 public final class SpriteRenderer implements EntityRenderer {
     private final Sprite sprite;
 

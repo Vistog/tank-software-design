@@ -1,5 +1,6 @@
 package ru.mipt.bit.platformer.model;
 
+/** Domain: movement direction. */
 public enum Direction {
     UP(0, 1, 90f), LEFT(-1, 0, 180f), DOWN(0, -1, -90f), RIGHT(1, 0, 0f);
 
