@@ -16,6 +16,11 @@ public enum HealthState implements TankState {
 
     public float speedMultiplier() { return speed; }
     public boolean canShoot() { return shooting; }
+    public float shotInterval() { return 0.4f; }
+
+    public TankState afterDamage(int health, int maxHealth) {
+        return forHealth(health, maxHealth);
+    }
 
     static TankState forHealth(int health, int maxHealth) {
         if (100L * health > 70L * maxHealth) return LIGHT;

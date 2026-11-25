@@ -9,6 +9,19 @@ public final class Tank extends Entity {
     private int health;
     private final int maxHealth;
     private TankState state = HealthState.LIGHT;
+    private float timeSinceShot = Float.POSITIVE_INFINITY;
+
+    public void changeState(TankState state) {
+        this.state = Objects.requireNonNull(state);
+    }
+
+    public void restoreHealthState() {
+        changeState(HealthState.forHealth(health, maxHealth));
+    }
+
+    void advanceReload(float deltaTime) {
+        timeSinceShot += deltaTime;
+    }
 
     public Tank(int id) {
         this(id, 100);
@@ -51,7 +64,7 @@ public final class Tank extends Entity {
     public void takeDamage(int damage) {
         if (damage < 0) throw new IllegalArgumentException("Negative damage");
         health = Math.max(0, health - damage);
-        state = HealthState.forHealth(health, maxHealth);
+        changeState(state.afterDamage(health, maxHealth));
         if (!isAlive()) {
             requestedDirection = null;
             shotRequested = false;
@@ -61,7 +74,10 @@ public final class Tank extends Entity {
     boolean takeShotRequest() {
         boolean requested = shotRequested;
         shotRequested = false;
-        return requested && isAlive() && state.canShoot();
+        if (!requested || !isAlive() || !state.canShoot()
+                || timeSinceShot < state.shotInterval()) return false;
+        timeSinceShot = 0;
+        return true;
     }
 
     @Override

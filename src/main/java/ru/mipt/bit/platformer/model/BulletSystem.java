@@ -36,11 +36,11 @@ public final class BulletSystem {
         while (remaining > 0) {
             if (bullets().isEmpty()) {
                 elapsed = 0;
-                world.update(remaining);
+                advanceWorld(remaining);
                 return;
             }
             float step = Math.min(remaining, stepDuration - elapsed);
-            world.update(step);
+            advanceWorld(step);
             resolveCollisions();
             elapsed += step;
             remaining -= step;
@@ -50,6 +50,13 @@ public final class BulletSystem {
                 moveBullets();
                 resolveCollisions();
             }
+        }
+    }
+
+    private void advanceWorld(float deltaTime) {
+        world.update(deltaTime);
+        for (Entity entity : world.entities()) {
+            if (entity instanceof Tank) ((Tank) entity).advanceReload(deltaTime);
         }
     }
 
